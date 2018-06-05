@@ -7,11 +7,11 @@
 
   <groupId>ch.qos.logback</groupId>
   <artifactId>logback-parent</artifactId>
-  <version>1.2.3</version>
+  <version>1.2.3-SL</version>
   <packaging>pom</packaging>
 
   <name>Logback-Parent</name>
-  <description>logback project pom.xml file</description>
+  <description>SL fork of logback project pom.xml file</description>
 
   <url>http://logback.qos.ch</url>
 
@@ -33,17 +33,17 @@
     </license>
   </licenses>
 
-  <scm>
-    <url>https://github.com/ceki/logback</url>
-    <connection>git@github.com:ceki/logback.git</connection>
-  </scm>
+  <!--<scm>-->
+    <!--<url>https://github.com/ceki/logback</url>-->
+    <!--<connection>git@github.com:ceki/logback.git</connection>-->
+  <!--</scm>-->
 
   <modules>
     <module>logback-core</module>
     <module>logback-classic</module>
-    <module>logback-access</module>
-    <module>logback-site</module>
-    <module>logback-examples</module>
+    <!--<module>logback-access</module>-->
+    <!--<module>logback-site</module>-->
+    <!--<module>logback-examples</module>-->
   </modules>
 
   <properties>
@@ -429,10 +429,14 @@
       <url>scp://te.qos.ch/var/www/logback.qos.ch/htdocs/</url>
     </site>
 
-    <repository>
-      <id>sonatype-nexus-staging</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
+<!--     <repository> -->
+<!--       <id>sonatype-nexus-staging</id> -->
+<!--       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url> -->
+<!--     </repository> -->
+		<repository>
+			<id>local-maven-repo</id>
+			<url>file:///${user.dir}/local-maven-repo</url>
+		</repository>
 
   </distributionManagement>
 
@@ -442,6 +446,19 @@
       <properties>
         <maven.test.skip>true</maven.test.skip>
       </properties>
+    </profile>
+    <profile>
+		<id>publish</id>
+		<activation>
+			<activeByDefault>false</activeByDefault>
+		</activation>
+		<distributionManagement>
+			<repository>
+				<uniqueVersion>false</uniqueVersion>
+				<id>sealights-internal</id>
+				<url>http://nex.sealights.co:8081/repository/sealights-internal</url>
+			</repository>
+		</distributionManagement>
     </profile>
     <profile>
       <id>license</id>

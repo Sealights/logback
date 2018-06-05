@@ -116,6 +116,10 @@ public class ContextInitializer {
     }
 
     public URL findURLOfDefaultConfigurationFile(boolean updateStatus) {
+        if (Boolean.getBoolean("sl.logback")) {
+            // SL logback is working differently
+            return null;
+        }
         ClassLoader myClassLoader = Loader.getClassLoaderOfObject(this);
         URL url = findConfigFileURLFromSystemProperties(myClassLoader, updateStatus);
         if (url != null) {
