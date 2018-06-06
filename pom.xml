@@ -7,7 +7,8 @@
 
   <groupId>ch.qos.logback</groupId>
   <artifactId>logback-parent</artifactId>
-  <version>1.2.3-SL</version>
+  <!-- This is the sealights specific version on base of 1.2.3 -->
+  <version>1.2.300</version>
   <packaging>pom</packaging>
 
   <name>Logback-Parent</name>
@@ -47,6 +48,7 @@
   </modules>
 
   <properties>
+    <logback.original.version>1.2.3</logback.original.version>
     <maven.compiler.source>1.6</maven.compiler.source>
     <maven.compiler.target>1.6</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
