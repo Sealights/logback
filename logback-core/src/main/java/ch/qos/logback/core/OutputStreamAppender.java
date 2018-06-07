@@ -17,12 +17,17 @@ import static ch.qos.logback.core.CoreConstants.CODES_URL;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
 import ch.qos.logback.core.spi.DeferredProcessingAware;
 import ch.qos.logback.core.status.ErrorStatus;
+import ch.qos.logback.core.status.Status;
+import ch.qos.logback.core.util.StatusPrinter;
 
 /**
  * OutputStreamAppender appends events to a {@link OutputStream}. This class
@@ -52,6 +57,16 @@ public class OutputStreamAppender<E> extends UnsynchronizedAppenderBase<E> {
     private OutputStream outputStream;
 
     boolean immediateFlush = true;
+    
+    // Prevention of infinite locking - SL specific stuff
+    private List<Status> dropMessagesErrors = new ArrayList<Status>();
+    private static long lockTimeOutMsec = 500;
+    static {
+    	Long propValue = Long.getLong("sl.logback.lockTimeout");
+    	if (propValue!= null ) {
+    		lockTimeOutMsec = propValue;
+    	}
+    }
 
     /**
     * The underlying output stream used by this appender.
@@ -194,14 +209,21 @@ public class OutputStreamAppender<E> extends UnsynchronizedAppenderBase<E> {
         if(byteArray == null || byteArray.length == 0)
             return;
         
-        lock.lock();
-        try {
-            this.outputStream.write(byteArray);
-            if (immediateFlush) {
-                this.outputStream.flush();
-            }
-        } finally {
-            lock.unlock();
+        if (tryLock()) {
+	        try {
+	            this.outputStream.write(byteArray);
+	            if (immediateFlush) {
+	                this.outputStream.flush();
+	            }
+	        } finally {
+	            lock.unlock();
+	        }
+        }
+        else {
+        	//addStatus(new ErrorStatus("Failed to get access to output streaml; dropping log messsage", this));
+        	dropMessagesErrors.add(new ErrorStatus("Failed to get access to output streaml; dropping log messsage", this)) ;
+        	StatusPrinter.print(dropMessagesErrors);
+        	dropMessagesErrors.clear();
         }
     }
 
@@ -235,6 +257,7 @@ public class OutputStreamAppender<E> extends UnsynchronizedAppenderBase<E> {
             // and add a single ErrorStatus to the SM.
             this.started = false;
             addStatus(new ErrorStatus("IO failure in appender", this, ioe));
+            StatusPrinter.printIfErrorsOccured(getContext());
         }
     }
 
@@ -254,4 +277,18 @@ public class OutputStreamAppender<E> extends UnsynchronizedAppenderBase<E> {
         this.immediateFlush = immediateFlush;
     }
 
+    private boolean tryLock() {
+    	// This is the standard implementation
+		// lock.lock();
+		// return true;
+    	
+        try {
+        	// Aquire lock with timeout prevents infinite lock wait 
+        	return lock.tryLock(lockTimeOutMsec, TimeUnit.MILLISECONDS);
+		} 
+        catch (InterruptedException e) {
+			return false;
+		}
+    }
+    
 }
