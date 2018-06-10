@@ -220,10 +220,11 @@ public class OutputStreamAppender<E> extends UnsynchronizedAppenderBase<E> {
 	        }
         }
         else {
-        	//addStatus(new ErrorStatus("Failed to get access to output streaml; dropping log messsage", this));
-        	dropMessagesErrors.add(new ErrorStatus("Failed to get access to output streaml; dropping log messsage", this)) ;
-        	StatusPrinter.print(dropMessagesErrors);
-        	dropMessagesErrors.clear();
+            // SL additions
+            ////addStatus(new ErrorStatus("Failed to get access to output stream; dropping log message", this));
+        	//dropMessagesErrors.add(new ErrorStatus("Failed to get access to output stream; dropping log message", this)) ;
+        	//StatusPrinter.print(dropMessagesErrors);
+        	//dropMessagesErrors.clear();
         }
     }
 
@@ -286,7 +287,7 @@ public class OutputStreamAppender<E> extends UnsynchronizedAppenderBase<E> {
         	// Aquire lock with timeout prevents infinite lock wait 
         	return lock.tryLock(lockTimeOutMsec, TimeUnit.MILLISECONDS);
 		} 
-        catch (InterruptedException e) {
+        catch (Exception e) {
 			return false;
 		}
     }
